@@ -1,0 +1,402 @@
+openapi: 3.0.3
+info:
+  title: Cloudsquare COSS API
+  version: 1.0.0
+  description: |
+    backend/api의 in-memory 검증 기준 API 계약.
+    인증은 Bearer JWT, 인가는 ROLE_STUDENT/ROLE_ADMIN 및 일부 SCOPE 조건을 사용한다.
+servers:
+  - url: http://localhost:8081
+    description: Local API Server
+
+tags:
+  - name: Demo
+    description: 보안 동작 확인용 엔드포인트
+  - name: Student
+    description: 학생/관리자 조회 API
+  - name: Admin
+    description: 관리자 CUD API
+
+paths:
+  /api/me:
+    get:
+      tags: [Demo]
+      summary: 현재 인증 사용자 정보 조회
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/student/hello:
+    get:
+      tags: [Demo]
+      summary: 학생/관리자 접근 확인
+      description: ROLE_STUDENT 또는 ROLE_ADMIN 필요
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: student or admin access granted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/admin/hello:
+    get:
+      tags: [Demo]
+      summary: 관리자 접근 확인
+      description: ROLE_ADMIN 필요
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: admin access granted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/scope/read:
+    get:
+      tags: [Demo]
+      summary: scope 접근 확인
+      description: SCOPE_api.read 필요
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: scope api.read access granted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/student/courses:
+    get:
+      tags: [Student]
+      summary: 강의 목록 조회
+      description: ROLE_STUDENT 또는 ROLE_ADMIN 필요
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseSummaryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/student/enrollments:
+    get:
+      tags: [Student]
+      summary: 내 수강 신청 목록 조회
+      description: ROLE_STUDENT 또는 ROLE_ADMIN 필요
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnrollmentSummaryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/admin/courses:
+    post:
+      tags: [Admin]
+      summary: 강의 생성
+      description: ROLE_ADMIN 필요
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseUpsertRequest'
+      responses:
+        '201':
+          description: 생성 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetailResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/admin/courses/{courseId}:
+    put:
+      tags: [Admin]
+      summary: 강의 수정
+      description: ROLE_ADMIN 필요
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CourseIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseUpsertRequest'
+      responses:
+        '200':
+          description: 수정 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetailResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Admin]
+      summary: 강의 삭제
+      description: ROLE_ADMIN 필요
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CourseIdPath'
+      responses:
+        '204':
+          description: 삭제 성공
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    CourseIdPath:
+      name: courseId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+  responses:
+    Unauthorized:
+      description: 인증 실패
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-02-07T09:00:00Z'
+            status: 401
+            error: Unauthorized
+            path: /api/student/courses
+
+    Forbidden:
+      description: 인가 실패
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-02-07T09:01:00Z'
+            status: 403
+            error: Forbidden
+            path: /api/admin/courses
+
+    NotFound:
+      description: 리소스 없음
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-02-07T09:02:00Z'
+            status: 404
+            error: Not Found
+            message: course not found
+            path: /api/admin/courses/9999
+
+  schemas:
+    MeResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          example: student1
+        authorities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthorityItem'
+
+    AuthorityItem:
+      type: object
+      properties:
+        authority:
+          type: string
+          example: ROLE_STUDENT
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    CourseSummaryResponse:
+      type: object
+      properties:
+        courseId:
+          type: integer
+          format: int64
+          example: 2001
+        courseCode:
+          type: string
+          example: COSS-JAVA-101
+        title:
+          type: string
+          example: Java Basics
+        instructorName:
+          type: string
+          example: Kim
+        capacity:
+          type: integer
+          example: 40
+        enrolledCount:
+          type: integer
+          example: 12
+
+    EnrollmentSummaryResponse:
+      type: object
+      properties:
+        enrollmentId:
+          type: integer
+          format: int64
+          example: 9001
+        courseId:
+          type: integer
+          format: int64
+          example: 2001
+        courseCode:
+          type: string
+          example: COSS-JAVA-101
+        courseTitle:
+          type: string
+          example: Java Basics
+        status:
+          type: string
+          example: ENROLLED
+        enrolledAt:
+          type: string
+          format: date-time
+          example: '2026-02-07T02:00:00Z'
+
+    CourseUpsertRequest:
+      type: object
+      required: [courseCode, title, instructorName, capacity]
+      properties:
+        courseCode:
+          type: string
+          example: COSS-SEC-301
+        title:
+          type: string
+          example: Cloud Security
+        instructorName:
+          type: string
+          example: Park
+        capacity:
+          type: integer
+          example: 30
+
+    CourseDetailResponse:
+      type: object
+      properties:
+        courseId:
+          type: integer
+          format: int64
+          example: 2003
+        courseCode:
+          type: string
+          example: COSS-SEC-301
+        title:
+          type: string
+          example: Cloud Security
+        instructorName:
+          type: string
+          example: Park
+        capacity:
+          type: integer
+          example: 30
+        enrolledCount:
+          type: integer
+          example: 0
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          example: 403
+        error:
+          type: string
+          example: Forbidden
+        message:
+          type: string
+          nullable: true
+        path:
+          type: string
+          example: /api/admin/courses
