@@ -8,6 +8,7 @@ import AdminPage from "./pages/AdminPage";
 import LectureListPage from "./pages/LectureListPage";
 import LectureDetailPage from "./pages/LectureDetailPage";
 import VideoPlayerPage from "./pages/VideoPlayerPage";
+import AlertBox from "./components/ui/AlertBox";
 
 export default function App() {
   const configError = getAuthConfigError();
@@ -61,14 +62,10 @@ export default function App() {
 
   if (configError || authError) {
     return (
-      <div className="container">
-        <header className="header">
-          <h1>COSS LMS</h1>
-        </header>
-        <section>
-          <h2>Authentication initialization failed</h2>
-          <pre className="error">{configError || authError}</pre>
-        </section>
+      <div className="app-shell">
+        <main className="content-wrap page-content">
+          <AlertBox type="error">{configError || authError}</AlertBox>
+        </main>
       </div>
     );
   }

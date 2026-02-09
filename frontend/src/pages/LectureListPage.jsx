@@ -2,6 +2,23 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { getLectures } from "../api";
+import AlertBox from "../components/ui/AlertBox";
+import Badge from "../components/ui/Badge";
+import Card from "../components/ui/Card";
+import SectionTitle from "../components/ui/SectionTitle";
+
+function statusVariant(status) {
+  if (status === "READY") {
+    return "success";
+  }
+  if (status === "PROCESSING") {
+    return "warning";
+  }
+  if (status === "UPLOADED") {
+    return "info";
+  }
+  return "neutral";
+}
 
 export default function LectureListPage({ auth }) {
   const [lectures, setLectures] = useState([]);
@@ -23,30 +40,41 @@ export default function LectureListPage({ auth }) {
     }
   }, [auth.authenticated]);
 
-  if (!auth.authenticated) {
-    return <p>로그인 후 강의 목록을 확인할 수 있습니다.</p>;
-  }
-
   return (
-    <section>
-      <h2>강의 목록</h2>
-      <div className="button-row">
-        <button onClick={loadLectures}>새로고침</button>
-      </div>
-      {error && <pre className="error">{error}</pre>}
-      <div className="card-grid">
+    <section className="stack-lg">
+      <SectionTitle
+        eyebrow="Lecture Catalog"
+        title="Available Lectures"
+        subtitle="Browse the catalog, check processing status, and open lecture detail."
+        actions={
+          <button className="btn primary" onClick={loadLectures} disabled={!auth.authenticated}>
+            Refresh
+          </button>
+        }
+      />
+
+      {!auth.authenticated && <AlertBox type="warning">Login is required to load lectures.</AlertBox>}
+      {error && <AlertBox type="error">{error}</AlertBox>}
+
+      <div className="lecture-grid">
         {lectures.map((lecture) => (
-          <article key={lecture.id} className="lecture-card">
+          <Card key={lecture.id} className="lecture-item">
             {lecture.thumbnailUrl ? (
               <img src={lecture.thumbnailUrl} alt={`${lecture.title} thumbnail`} className="thumb" />
             ) : (
-              <div className="thumb placeholder">No Thumbnail</div>
+              <div className="thumb placeholder">No thumbnail yet</div>
             )}
-            <h3>{lecture.title}</h3>
-            <p>{lecture.description}</p>
-            <p>Status: {lecture.videoStatus || "EMPTY"}</p>
-            <Link to={`/lectures/${lecture.id}`}>상세 보기</Link>
-          </article>
+            <div className="lecture-meta">
+              <div className="lecture-title-row">
+                <h3>{lecture.title}</h3>
+                <Badge variant={statusVariant(lecture.videoStatus)}>{lecture.videoStatus || "EMPTY"}</Badge>
+              </div>
+              <p>{lecture.description}</p>
+              <Link className="btn-link" to={`/lectures/${lecture.id}`}>
+                Open Detail
+              </Link>
+            </div>
+          </Card>
         ))}
       </div>
     </section>

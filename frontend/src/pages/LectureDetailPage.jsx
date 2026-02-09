@@ -2,6 +2,23 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { enrollLecture, getLecture } from "../api";
+import AlertBox from "../components/ui/AlertBox";
+import Badge from "../components/ui/Badge";
+import Card from "../components/ui/Card";
+import SectionTitle from "../components/ui/SectionTitle";
+
+function statusVariant(status) {
+  if (status === "READY") {
+    return "success";
+  }
+  if (status === "PROCESSING") {
+    return "warning";
+  }
+  if (status === "UPLOADED") {
+    return "info";
+  }
+  return "neutral";
+}
 
 export default function LectureDetailPage({ auth }) {
   const { lectureId } = useParams();
@@ -29,37 +46,55 @@ export default function LectureDetailPage({ auth }) {
   async function handleEnroll() {
     try {
       await enrollLecture(lectureId);
-      setEnrollResult("수강 신청 완료");
+      setEnrollResult("Enrollment completed.");
       setError("");
     } catch (e) {
       setError(e.message);
     }
   }
 
-  if (!auth.authenticated) {
-    return <p>로그인 후 강의 상세를 확인할 수 있습니다.</p>;
-  }
-
   return (
-    <section>
-      <h2>강의 상세</h2>
-      {error && <pre className="error">{error}</pre>}
+    <section className="stack-lg">
+      <SectionTitle
+        eyebrow={`Lecture #${lectureId}`}
+        title="Lecture Detail"
+        subtitle="Review lecture metadata, enroll, and move to the watch page."
+      />
+
+      {!auth.authenticated && <AlertBox type="warning">Login is required to view lecture detail.</AlertBox>}
+      {error && <AlertBox type="error">{error}</AlertBox>}
+      {enrollResult && <AlertBox type="success">{enrollResult}</AlertBox>}
+
       {lecture && (
-        <>
-          {lecture.thumbnailUrl ? (
-            <img src={lecture.thumbnailUrl} alt={`${lecture.title} thumbnail`} className="detail-thumb" />
-          ) : (
-            <div className="detail-thumb placeholder">No Thumbnail</div>
-          )}
-          <h3>{lecture.title}</h3>
-          <p>{lecture.description}</p>
-          <p>Status: {lecture.videoStatus || "EMPTY"}</p>
-          <div className="button-row">
-            <button onClick={handleEnroll}>수강 신청</button>
-            <button onClick={() => navigate(`/lectures/${lectureId}/watch`)}>재생 페이지 이동</button>
-          </div>
-          {enrollResult && <pre>{enrollResult}</pre>}
-        </>
+        <div className="detail-layout">
+          <Card className="detail-hero">
+            {lecture.thumbnailUrl ? (
+              <img src={lecture.thumbnailUrl} alt={`${lecture.title} thumbnail`} className="detail-thumb" />
+            ) : (
+              <div className="detail-thumb placeholder">No thumbnail yet</div>
+            )}
+            <div className="detail-body">
+              <div className="lecture-title-row">
+                <h3>{lecture.title}</h3>
+                <Badge variant={statusVariant(lecture.videoStatus)}>{lecture.videoStatus || "EMPTY"}</Badge>
+              </div>
+              <p>{lecture.description}</p>
+            </div>
+          </Card>
+
+          <Card>
+            <h3>Actions</h3>
+            <p>Enrollment is required before playback.</p>
+            <div className="button-row">
+              <button className="btn primary" onClick={handleEnroll}>
+                Enroll
+              </button>
+              <button className="btn secondary" onClick={() => navigate(`/lectures/${lectureId}/watch`)}>
+                Go To Player
+              </button>
+            </div>
+          </Card>
+        </div>
       )}
     </section>
   );

@@ -6,6 +6,9 @@ import {
   initVideoUpload,
   putObjectByPresignedUrl
 } from "../api";
+import AlertBox from "../components/ui/AlertBox";
+import Card from "../components/ui/Card";
+import SectionTitle from "../components/ui/SectionTitle";
 
 const initialLectureForm = {
   title: "",
@@ -26,7 +29,7 @@ export default function AdminPage({ auth }) {
       const created = await createAdminLecture(lectureForm);
       setLectureId(String(created.id));
       setLectureForm(initialLectureForm);
-      setResult(`강의 생성 완료: ${JSON.stringify(created, null, 2)}`);
+      setResult(`Lecture created:\n${JSON.stringify(created, null, 2)}`);
       setError("");
     } catch (err) {
       setError(err.message);
@@ -38,7 +41,7 @@ export default function AdminPage({ auth }) {
     e.preventDefault();
 
     if (!lectureId || !file) {
-      setError("lectureId와 파일을 모두 입력하세요.");
+      setError("Both lectureId and video file are required.");
       return;
     }
 
@@ -53,8 +56,8 @@ export default function AdminPage({ auth }) {
 
       setResult(
         [
-          `upload-init: ${JSON.stringify(init, null, 2)}`,
-          `upload-complete: ${JSON.stringify(complete, null, 2)}`
+          `upload-init:\n${JSON.stringify(init, null, 2)}`,
+          `upload-complete:\n${JSON.stringify(complete, null, 2)}`
         ].join("\n\n")
       );
       setError("");
@@ -65,57 +68,81 @@ export default function AdminPage({ auth }) {
   }
 
   return (
-    <section>
-      <h2>관리자 영상 업로드</h2>
-      {!auth.isAdmin && <p className="warn">ROLE_ADMIN 권한이 필요합니다.</p>}
+    <section className="stack-lg">
+      <SectionTitle
+        eyebrow="Administration"
+        title="Lecture Upload Console"
+        subtitle="Create a lecture first, then upload video by presigned URL workflow."
+      />
 
-      <form onSubmit={handleCreateLecture} className="form">
-        <h3>1) 강의 생성</h3>
-        <label>
-          title
-          <input
-            value={lectureForm.title}
-            onChange={(e) => setLectureForm({ ...lectureForm, title: e.target.value })}
-            required
-          />
-        </label>
-        <label>
-          description
-          <input
-            value={lectureForm.description}
-            onChange={(e) => setLectureForm({ ...lectureForm, description: e.target.value })}
-            required
-          />
-        </label>
-        <button type="submit" disabled={!auth.isAdmin}>강의 생성</button>
-      </form>
+      {!auth.isAdmin && <AlertBox type="warning">ROLE_ADMIN is required for this page.</AlertBox>}
+      {error && <AlertBox type="error">{error}</AlertBox>}
 
-      <form onSubmit={handleUpload} className="form">
-        <h3>2) 영상 업로드</h3>
-        <label>
-          lectureId
-          <input
-            type="number"
-            min="1"
-            value={lectureId}
-            onChange={(e) => setLectureId(e.target.value)}
-            required
-          />
-        </label>
-        <label>
-          video file
-          <input
-            type="file"
-            accept="video/*"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            required
-          />
-        </label>
-        <button type="submit" disabled={!auth.isAdmin}>업로드 실행</button>
-      </form>
+      <div className="admin-grid">
+        <Card>
+          <h3>1. Create Lecture</h3>
+          <p className="muted">The returned ID is auto-filled below for upload.</p>
+          <form onSubmit={handleCreateLecture} className="form">
+            <label>
+              Title
+              <input
+                value={lectureForm.title}
+                onChange={(e) => setLectureForm({ ...lectureForm, title: e.target.value })}
+                placeholder="e.g. Data Structures Week 1"
+                required
+              />
+            </label>
+            <label>
+              Description
+              <input
+                value={lectureForm.description}
+                onChange={(e) => setLectureForm({ ...lectureForm, description: e.target.value })}
+                placeholder="Summary shown on lecture card"
+                required
+              />
+            </label>
+            <button className="btn primary" type="submit" disabled={!auth.isAdmin}>
+              Create Lecture
+            </button>
+          </form>
+        </Card>
 
-      {error && <pre className="error">{error}</pre>}
-      {result && <pre>{result}</pre>}
+        <Card>
+          <h3>2. Upload Video</h3>
+          <p className="muted">Upload directly to object storage, then register metadata.</p>
+          <form onSubmit={handleUpload} className="form">
+            <label>
+              Lecture ID
+              <input
+                type="number"
+                min="1"
+                value={lectureId}
+                onChange={(e) => setLectureId(e.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Video File
+              <input
+                type="file"
+                accept="video/*"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                required
+              />
+            </label>
+            <button className="btn primary" type="submit" disabled={!auth.isAdmin}>
+              Start Upload
+            </button>
+          </form>
+        </Card>
+      </div>
+
+      {result && (
+        <Card>
+          <h3>Result</h3>
+          <pre>{result}</pre>
+        </Card>
+      )}
     </section>
   );
 }

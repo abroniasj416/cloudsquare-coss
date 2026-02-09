@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
 import { getMyInfo } from "../api";
+import Card from "../components/ui/Card";
+import SectionTitle from "../components/ui/SectionTitle";
+import AlertBox from "../components/ui/AlertBox";
 
 export default function Home({ auth }) {
   const [me, setMe] = useState(null);
@@ -33,11 +36,38 @@ export default function Home({ auth }) {
   }, [auth.authenticated]);
 
   return (
-    <section>
-      <h2>Home</h2>
-      <p>학생은 수강 후 재생 가능하고, 관리자는 강의 생성 및 영상 업로드를 수행합니다.</p>
-      {!auth.authenticated && <p>로그인 후 기능을 사용할 수 있습니다.</p>}
-      {me && <pre>{JSON.stringify(me, null, 2)}</pre>}
+    <section className="stack-lg">
+      <SectionTitle
+        eyebrow="Overview"
+        title="Learning Dashboard"
+        subtitle="Manage lectures, enroll students, upload videos, and stream securely."
+      />
+
+      {!auth.authenticated && (
+        <AlertBox type="warning">Login is required to call protected APIs and view personalized data.</AlertBox>
+      )}
+
+      <div className="feature-grid">
+        <Card>
+          <h3>Admin Flow</h3>
+          <p>Create lecture, initialize upload, upload to Object Storage, and finalize metadata.</p>
+        </Card>
+        <Card>
+          <h3>Student Flow</h3>
+          <p>Enroll first, then request playback URL and stream video with expiration refresh.</p>
+        </Card>
+        <Card>
+          <h3>Security</h3>
+          <p>JWT authentication with enrollment checks and private storage objects.</p>
+        </Card>
+      </div>
+
+      {me && (
+        <Card>
+          <h3>Current Identity Payload</h3>
+          <pre>{JSON.stringify(me, null, 2)}</pre>
+        </Card>
+      )}
     </section>
   );
 }

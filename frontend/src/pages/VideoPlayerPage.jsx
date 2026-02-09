@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { getPlayback } from "../api";
+import AlertBox from "../components/ui/AlertBox";
+import Card from "../components/ui/Card";
+import SectionTitle from "../components/ui/SectionTitle";
 
 export default function VideoPlayerPage({ auth }) {
   const { lectureId } = useParams();
@@ -25,18 +28,29 @@ export default function VideoPlayerPage({ auth }) {
     }
   }, [auth.authenticated, lectureId]);
 
-  if (!auth.authenticated) {
-    return <p>로그인 후 영상을 시청할 수 있습니다.</p>;
-  }
-
   return (
-    <section>
-      <h2>영상 재생</h2>
-      <div className="button-row">
-        <button onClick={loadPlayback}>재생 URL 갱신</button>
-      </div>
-      {error && <pre className="error">{error}</pre>}
-      {playbackUrl && <video src={playbackUrl} controls className="video-player" />}
+    <section className="stack-lg">
+      <SectionTitle
+        eyebrow={`Lecture #${lectureId}`}
+        title="Video Player"
+        subtitle="Refresh playback URL when it expires and continue streaming."
+        actions={
+          <button className="btn primary" onClick={loadPlayback} disabled={!auth.authenticated}>
+            Refresh Playback URL
+          </button>
+        }
+      />
+
+      {!auth.authenticated && <AlertBox type="warning">Login is required to watch videos.</AlertBox>}
+      {error && <AlertBox type="error">{error}</AlertBox>}
+
+      <Card className="player-card">
+        {playbackUrl ? (
+          <video src={playbackUrl} controls className="video-player" />
+        ) : (
+          <div className="player-placeholder">Playback URL is not ready yet.</div>
+        )}
+      </Card>
     </section>
   );
 }
