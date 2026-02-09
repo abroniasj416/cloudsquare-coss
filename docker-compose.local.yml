@@ -51,6 +51,15 @@ services:
       DB_PASSWORD: rootpw
       ISSUER_URI: http://localhost:8080/realms/coss
       CORS_ALLOWED_ORIGINS: http://localhost:5173
+      NCP_ACCESS_KEY: ${NCP_ACCESS_KEY:-dummy-access-key}
+      NCP_SECRET_KEY: ${NCP_SECRET_KEY:-dummy-secret-key}
+      NCP_S3_ENDPOINT: ${NCP_S3_ENDPOINT:-http://localhost:9000}
+      NCP_OBJECT_STORAGE_BUCKET: ${NCP_OBJECT_STORAGE_BUCKET:-local-bucket}
+      NCP_VIDEO_PREFIX: ${NCP_VIDEO_PREFIX:-lms-video}
+      CDN_BASE_URL: ${CDN_BASE_URL:-}
+      PRESIGNED_PUT_EXPIRES_SECONDS: ${PRESIGNED_PUT_EXPIRES_SECONDS:-900}
+      PRESIGNED_GET_EXPIRES_SECONDS: ${PRESIGNED_GET_EXPIRES_SECONDS:-900}
+      FFMPEG_PATH: ${FFMPEG_PATH:-ffmpeg}
     depends_on:
       - api-db
       - keycloak

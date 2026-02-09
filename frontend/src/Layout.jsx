@@ -1,4 +1,4 @@
-﻿import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 
 import { login, logout, register } from "./auth";
 
@@ -6,7 +6,7 @@ export default function Layout({ auth, refreshAuth }) {
   return (
     <div className="container">
       <header className="header">
-        <h1>COSS Demo</h1>
+        <h1>COSS LMS Video</h1>
         <div className="auth-box">
           <div>User: {auth.username}</div>
           <div>Authenticated: {auth.authenticated ? "Yes" : "No"}</div>
@@ -28,7 +28,7 @@ export default function Layout({ auth, refreshAuth }) {
 
       <nav className="nav">
         <NavLink to="/">Home</NavLink>
-        <NavLink to="/student">Student</NavLink>
+        <NavLink to="/lectures">Lectures</NavLink>
         <NavLink to="/admin">Admin</NavLink>
       </nav>
 

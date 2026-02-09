@@ -4,8 +4,10 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "./Layout";
 import { getAuthConfigError, getAuthState, initAuth, ensureFreshToken } from "./auth";
 import Home from "./pages/Home";
-import StudentPage from "./pages/StudentPage";
 import AdminPage from "./pages/AdminPage";
+import LectureListPage from "./pages/LectureListPage";
+import LectureDetailPage from "./pages/LectureDetailPage";
+import VideoPlayerPage from "./pages/VideoPlayerPage";
 
 export default function App() {
   const configError = getAuthConfigError();
@@ -57,31 +59,15 @@ export default function App() {
     };
   }, [configError]);
 
-  if (configError) {
+  if (configError || authError) {
     return (
       <div className="container">
         <header className="header">
-          <h1>COSS Demo</h1>
-        </header>
-        <section>
-          <h2>Environment variables missing</h2>
-          <p>Copy `frontend/.env.example` to `frontend/.env` and restart the dev server.</p>
-          <pre className="error">{configError}</pre>
-        </section>
-      </div>
-    );
-  }
-
-  if (authError) {
-    return (
-      <div className="container">
-        <header className="header">
-          <h1>COSS Demo</h1>
+          <h1>COSS LMS</h1>
         </header>
         <section>
           <h2>Authentication initialization failed</h2>
-          <p>Check browser console and verify Keycloak URL/realm/client configuration.</p>
-          <pre className="error">{authError}</pre>
+          <pre className="error">{configError || authError}</pre>
         </section>
       </div>
     );
@@ -92,7 +78,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout auth={auth} refreshAuth={refreshAuth} />}>
           <Route index element={<Home auth={auth} />} />
-          <Route path="student" element={<StudentPage auth={auth} />} />
+          <Route path="lectures" element={<LectureListPage auth={auth} />} />
+          <Route path="lectures/:lectureId" element={<LectureDetailPage auth={auth} />} />
+          <Route path="lectures/:lectureId/watch" element={<VideoPlayerPage auth={auth} />} />
           <Route path="admin" element={<AdminPage auth={auth} />} />
         </Route>
       </Routes>

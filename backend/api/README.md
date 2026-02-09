@@ -1,224 +1,26 @@
 # backend/api
 
-Spring Boot API ¼­¹öÀÇ ÀÎÁõ/ÀÎ°¡ °ËÁõ °á°ú¸¦ ±âÁØÀ¸·Î API °è¾àÀ» °íÁ¤ÇÑ ¹®¼­ÀÔ´Ï´Ù.
+Spring Boot LMS APIì…ë‹ˆë‹¤.
 
-- ÀÎÁõ: OAuth2 Resource Server (JWT)
-- ÅäÅ« °ËÁõ: Keycloak issuer-uri + JWK
-- ¿ªÇÒ(Role): `ROLE_STUDENT`, `ROLE_ADMIN`
-- ¹üÀ§(Scope): ¿¹½Ã·Î `SCOPE_api.read`
-
-## 1) ÀüÃ¼ ¿£µåÆ÷ÀÎÆ® ¸ñ·Ï
-
-| Method | Path | ¼³¸í | ÀÎÁõ ÇÊ¿ä | Á¢±Ù ±ÇÇÑ | Àû¿ë ±Ù°Å |
-|---|---|---|---|---|---|
-| GET | `/api/me` | ÇöÀç ÀÎÁõ ÁÖÃ¼/±ÇÇÑ È®ÀÎ | Y | ÀÎÁõ »ç¿ëÀÚ | `SecurityConfig` (`anyRequest().authenticated()`) |
-| GET | `/api/student/hello` | ÇĞ»ı/°ü¸®ÀÚ Á¢±Ù Å×½ºÆ® | Y | `ROLE_STUDENT` or `ROLE_ADMIN` | `SecurityConfig` + `@PreAuthorize` |
-| GET | `/api/admin/hello` | °ü¸®ÀÚ Á¢±Ù Å×½ºÆ® | Y | `ROLE_ADMIN` | `SecurityConfig` + `@PreAuthorize` |
-| GET | `/api/scope/read` | scope Á¢±Ù Å×½ºÆ® | Y | `SCOPE_api.read` | `SecurityConfig` + `@PreAuthorize` |
-| GET | `/api/student/courses` | °­ÀÇ ¸ñ·Ï Á¶È¸ | Y | `ROLE_STUDENT` or `ROLE_ADMIN` | `SecurityConfig` + `@PreAuthorize` |
-| GET | `/api/student/enrollments` | ³» ¼ö°­ ½ÅÃ» Á¶È¸ | Y | `ROLE_STUDENT` or `ROLE_ADMIN` | `SecurityConfig` + `@PreAuthorize` |
-| POST | `/api/admin/courses` | °­ÀÇ »ı¼º | Y | `ROLE_ADMIN` | `SecurityConfig` + `@PreAuthorize` |
-| PUT | `/api/admin/courses/{courseId}` | °­ÀÇ ¼öÁ¤ | Y | `ROLE_ADMIN` | `SecurityConfig` + `@PreAuthorize` |
-| DELETE | `/api/admin/courses/{courseId}` | °­ÀÇ »èÁ¦ | Y | `ROLE_ADMIN` | `SecurityConfig` + `@PreAuthorize` |
-
-## 2) ±ÇÇÑ ¸ÅÆ®¸¯½º
-
-| Endpoint | ADMIN | STUDENT | ¹ÌÀÎÁõ |
-|---|---|---|---|
-| GET `/api/me` | 200 | 200 | 401 |
-| GET `/api/student/hello` | 200 | 200 | 401 |
-| GET `/api/admin/hello` | 200 | 403 | 401 |
-| GET `/api/scope/read` | 200 ¶Ç´Â 403 (`SCOPE_api.read` º¸À¯ ¿©ºÎ) | 200 ¶Ç´Â 403 (`SCOPE_api.read` º¸À¯ ¿©ºÎ) | 401 |
-| GET `/api/student/courses` | 200 | 200 | 401 |
-| GET `/api/student/enrollments` | 200 | 200 | 401 |
-| POST `/api/admin/courses` | 201 | 403 | 401 |
-| PUT `/api/admin/courses/{courseId}` | 200 | 403 | 401 |
-| DELETE `/api/admin/courses/{courseId}` | 204 | 403 | 401 |
-
-## 3) ¿äÃ»/ÀÀ´ä JSON ¿¹½Ã
-
-### 3.1 GET `/api/me`
-
-ÀÀ´ä ¿¹½Ã:
-
-```json
-{
-  "name": "student1",
-  "authorities": [
-    { "authority": "ROLE_STUDENT" },
-    { "authority": "SCOPE_profile" }
-  ]
-}
-```
-
-### 3.2 GET `/api/student/courses`
-
-ÀÀ´ä ¿¹½Ã:
-
-```json
-[
-  {
-    "courseId": 2001,
-    "courseCode": "COSS-JAVA-101",
-    "title": "Java Basics",
-    "instructorName": "Kim",
-    "capacity": 40,
-    "enrolledCount": 12
-  }
-]
-```
-
-### 3.3 GET `/api/student/enrollments`
-
-ÀÀ´ä ¿¹½Ã:
-
-```json
-[
-  {
-    "enrollmentId": 9001,
-    "courseId": 2001,
-    "courseCode": "COSS-JAVA-101",
-    "courseTitle": "Java Basics",
-    "status": "ENROLLED",
-    "enrolledAt": "2026-02-07T02:00:00Z"
-  }
-]
-```
-
-### 3.4 POST `/api/admin/courses`
-
-¿äÃ» ¿¹½Ã:
-
-```json
-{
-  "courseCode": "COSS-SEC-301",
-  "title": "Cloud Security",
-  "instructorName": "Park",
-  "capacity": 30
-}
-```
-
-ÀÀ´ä ¿¹½Ã (201):
-
-```json
-{
-  "courseId": 2003,
-  "courseCode": "COSS-SEC-301",
-  "title": "Cloud Security",
-  "instructorName": "Park",
-  "capacity": 30,
-  "enrolledCount": 0
-}
-```
-
-### 3.5 PUT `/api/admin/courses/{courseId}`
-
-¿äÃ» ¿¹½Ã:
-
-```json
-{
-  "courseCode": "COSS-SEC-301",
-  "title": "Cloud Security (Updated)",
-  "instructorName": "Park",
-  "capacity": 35
-}
-```
-
-ÀÀ´ä ¿¹½Ã (200):
-
-```json
-{
-  "courseId": 2003,
-  "courseCode": "COSS-SEC-301",
-  "title": "Cloud Security (Updated)",
-  "instructorName": "Park",
-  "capacity": 35,
-  "enrolledCount": 0
-}
-```
-
-### 3.6 DELETE `/api/admin/courses/{courseId}`
-
-- ¿äÃ» ¹Ùµğ ¾øÀ½
-- ÀÀ´ä: `204 No Content`
-
-### 3.7 ¿¡·¯ ÀÀ´ä ¿¹½Ã
-
-401 Unauthorized:
-
-```json
-{
-  "timestamp": "2026-02-07T09:00:00Z",
-  "status": 401,
-  "error": "Unauthorized",
-  "path": "/api/student/courses"
-}
-```
-
-403 Forbidden:
-
-```json
-{
-  "timestamp": "2026-02-07T09:01:00Z",
-  "status": 403,
-  "error": "Forbidden",
-  "path": "/api/admin/courses"
-}
-```
-
-404 Not Found:
-
-```json
-{
-  "timestamp": "2026-02-07T09:02:00Z",
-  "status": 404,
-  "error": "Not Found",
-  "message": "course not found",
-  "path": "/api/admin/courses/9999"
-}
-```
-
-## 4) Keycloak ÅäÅ« ¹ß±Ş curl ¿¹½Ã
-
-¾Æ·¡ ¿¹½Ã´Â Å×½ºÆ®¸¦ À§ÇÑ ÅäÅ« È¹µæ ÀıÂ÷ÀÌ¸ç, API ¼­¹ö´Â ¹ß±Ş¿¡ °ü¿©ÇÏÁö ¾Ê°í °ËÁõ¸¸ ¼öÇàÇÕ´Ï´Ù.
-
-### 4.1 Service Account ÅäÅ« (client_credentials)
+## ì‹¤í–‰
 
 ```bash
-curl -X POST "http://localhost:8080/realms/coss/protocol/openid-connect/token" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=client_credentials" \
-  -d "client_id=coss-api" \
-  -d "client_secret=<COSS_API_CLIENT_SECRET>"
+cd backend/api
+./gradlew bootRun
 ```
 
-### 4.2 ¾×¼¼½º ÅäÅ«À¸·Î API È£Ãâ
+## í…ŒìŠ¤íŠ¸
 
 ```bash
-curl -X GET "http://localhost:8081/api/student/courses" \
-  -H "Authorization: Bearer <ACCESS_TOKEN>"
+./gradlew test
 ```
 
-## 5) SecurityConfig + @PreAuthorize¸¦ ÇÔ²² ¾²´Â ÀÌÀ¯
+## í•µì‹¬ íŒ¨í‚¤ì§€
 
-µÎ °èÃşÀ» ÇÔ²² »ç¿ëÇÏ´Â ÀÌÀ¯´Â ¿ªÇÒÀÌ ´Ù¸£±â ¶§¹®ÀÔ´Ï´Ù.
+- `com.cloudsquare.coss.api.lecture.controller`
+- `com.cloudsquare.coss.api.lecture.service`
+- `com.cloudsquare.coss.api.lecture.repository`
+- `com.cloudsquare.coss.api.lecture.entity`
+- `com.cloudsquare.coss.api.lecture.storage`
 
-1. `SecurityConfig` (URL °æ·Î ±â¹İ 1Â÷ Â÷´Ü)
-- `/api/admin/**`, `/api/student/**` °°Àº Å« ¹üÀ§¸¦ ºü¸£°Ô Â÷´ÜÇÕ´Ï´Ù.
-- Àß¸øµÈ Á¢±ÙÀ» ÇÊÅÍ Ã¼ÀÎ ´Ü°è¿¡¼­ Á¶±â¿¡ ¸·¾Æ ¼º´É/¾ÈÀü¼º¿¡ À¯¸®ÇÕ´Ï´Ù.
-
-2. `@PreAuthorize` (¸Ş¼­µå ´ÜÀ§ 2Â÷ Á¤Ã¥)
-- ÄÁÆ®·Ñ·¯/¼­ºñ½º ´ÜÀ§¿¡¼­ ´õ ¼¼¹ĞÇÑ Á¤Ã¥À» ¸í½ÃÇÕ´Ï´Ù.
-- ¿¹: °°Àº `/api/student/**`¶óµµ Æ¯Á¤ ¸Ş¼­µå¿¡ scope Á¶°Ç Ãß°¡ °¡´É.
-
-3. °á°ú
-- °æ·Î Á¤Ã¥ + ºñÁî´Ï½º Á¤Ã¥À» ÁßÃ¸ Àû¿ëÇØ Á¤Ã¥ ´©¶ô °¡´É¼ºÀ» ÁÙÀÔ´Ï´Ù.
-- ¿î¿µ Áß API°¡ ´Ã¾î³ªµµ º¸¾È ±ÔÄ¢À» °èÃşÀûÀ¸·Î À¯ÁöÇÒ ¼ö ÀÖ½À´Ï´Ù.
-
-## 6) Âü°í
-
-- OpenAPI ¹®¼­: `backend/api/openapi.yaml`
-- º¸¾È ¼³Á¤ ÄÚµå: `backend/api/src/main/java/com/cloudsquare/coss/api/config/SecurityConfig.java`
-- ÇĞ»ı API: `backend/api/src/main/java/com/cloudsquare/coss/api/course/controller/StudentCourseController.java`
-- °ü¸®ÀÚ API: `backend/api/src/main/java/com/cloudsquare/coss/api/course/controller/AdminCourseController.java`
-- µ¥¸ğ API: `backend/api/src/main/java/com/cloudsquare/coss/api/web/DemoProtectedController.java`
+ìƒì„¸ í™˜ê²½ë³€ìˆ˜ì™€ ì „ì²´ ì‹¤í–‰ ê°€ì´ë“œëŠ” ë£¨íŠ¸ `README.md`ë¥¼ ì°¸ê³ í•˜ì„¸ìš”.

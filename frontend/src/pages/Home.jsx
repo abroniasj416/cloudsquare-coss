@@ -1,10 +1,9 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getMyInfo } from "../api";
 
 export default function Home({ auth }) {
   const [me, setMe] = useState(null);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -12,7 +11,6 @@ export default function Home({ auth }) {
     async function load() {
       if (!auth.authenticated) {
         setMe(null);
-        setError("");
         return;
       }
 
@@ -20,11 +18,10 @@ export default function Home({ auth }) {
         const data = await getMyInfo();
         if (mounted) {
           setMe(data);
-          setError("");
         }
-      } catch (e) {
+      } catch {
         if (mounted) {
-          setError(e.message);
+          setMe(null);
         }
       }
     }
@@ -38,9 +35,8 @@ export default function Home({ auth }) {
   return (
     <section>
       <h2>Home</h2>
-      <p>Show authentication status and the `/api/me` result.</p>
-      {!auth.authenticated && <p>Not authenticated. Please login to call APIs.</p>}
-      {error && <pre className="error">Request failed: {error}</pre>}
+      <p>학생은 수강 후 재생 가능하고, 관리자는 강의 생성 및 영상 업로드를 수행합니다.</p>
+      {!auth.authenticated && <p>로그인 후 기능을 사용할 수 있습니다.</p>}
       {me && <pre>{JSON.stringify(me, null, 2)}</pre>}
     </section>
   );

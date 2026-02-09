@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:./.env[.properties]
   application:
     name: api
 
@@ -9,7 +11,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -24,6 +26,18 @@ spring:
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  storage:
+    access-key: ${NCP_ACCESS_KEY:}
+    secret-key: ${NCP_SECRET_KEY:}
+    endpoint: ${NCP_S3_ENDPOINT:}
+    bucket: ${NCP_OBJECT_STORAGE_BUCKET:}
+    video-prefix: ${NCP_VIDEO_PREFIX:}
+    cdn-base-url: ${CDN_BASE_URL:}
+    presigned-put-expires-seconds: ${PRESIGNED_PUT_EXPIRES_SECONDS:900}
+    presigned-get-expires-seconds: ${PRESIGNED_GET_EXPIRES_SECONDS:900}
+    region: ${NCP_S3_REGION:us-east-1}
+  video:
+    ffmpeg-path: ${FFMPEG_PATH:ffmpeg}
 
 server:
   port: 8081

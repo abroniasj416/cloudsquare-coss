@@ -1,91 +1,70 @@
-# Cloudsquare COSS Demo
+# Cloudsquare COSS LMS Video
 
-¸ñÇ¥: ÀÎÇÁ¶ó ¹èÆ÷ ½Ã¿¬¿¡¼­ **ÇÁ·ĞÆ® UI + Keycloak ·Î±×ÀÎ/È¸¿ø°¡ÀÔ + API È£Ãâ**±îÁö ÃÖ¼Ò ±â´ÉÀ» ºü¸£°Ô ÀçÇöÇÑ´Ù.
+React(Vite) + Spring Boot + Keycloak + MySQL + NCP Object Storage(S3 í˜¸í™˜) ê¸°ë°˜ LMS ì˜ìƒ ì—…ë¡œë“œ/ìŠ¤íŠ¸ë¦¬ë° ì˜ˆì œì…ë‹ˆë‹¤.
 
-## 1. ±¸¼º
+## 1. ê¸°ëŠ¥
 
-- Keycloak (issuer): `http://localhost:8080`
-- API (Spring Boot Resource Server): `http://localhost:8081`
-- Frontend (Vite React): `http://localhost:5173`
+- ê´€ë¦¬ì
+  - `POST /api/admin/lectures`: ê°•ì˜ ìƒì„±
+  - `POST /api/admin/lectures/{id}/video/upload-init`: presigned PUT URL ë°œê¸‰
+  - `POST /api/admin/lectures/{id}/video/upload-complete`: ì—…ë¡œë“œ ì™„ë£Œ + HEAD ê²€ì¦ + ì¸ë„¤ì¼ ë¹„ë™ê¸° ì²˜ë¦¬ ì‹œì‘
+- í•™ìƒ
+  - `GET /api/lectures`: ê°•ì˜ ëª©ë¡
+  - `GET /api/lectures/{id}`: ê°•ì˜ ìƒì„¸
+  - `POST /api/lectures/{id}/enroll`: ìˆ˜ê°• ì‹ ì²­
+  - `GET /api/lectures/{id}/playback`: ìˆ˜ê°•ìƒë§Œ ì¬ìƒ URL ë°œê¸‰
 
-## 2. Keycloak ¼³Á¤ °¡ÀÌµå
+## 2. í™˜ê²½ë³€ìˆ˜
 
-### 2.1 Realm ¼³Á¤
+ë°±ì—”ë“œ(`backend/api/.env`):
 
-1. Realm `coss` ¼±ÅÃ
-2. `Realm settings -> Login`¿¡¼­ `User registration` È°¼ºÈ­
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `ISSUER_URI`
+- `CORS_ALLOWED_ORIGINS`
+- `NCP_ACCESS_KEY`
+- `NCP_SECRET_KEY`
+- `NCP_S3_ENDPOINT`
+- `NCP_OBJECT_STORAGE_BUCKET`
+- `NCP_VIDEO_PREFIX`
+- `CDN_BASE_URL`
+- `PRESIGNED_PUT_EXPIRES_SECONDS`
+- `PRESIGNED_GET_EXPIRES_SECONDS`
+- `FFMPEG_PATH`
 
-ÀÌ ¼³Á¤À¸·Î ÇÁ·ĞÆ®ÀÇ "È¸¿ø°¡ÀÔ" ¹öÆ°ÀÌ Keycloak ±âº» Registration È­¸éÀ¸·Î ÀÌµ¿ÇÑ´Ù.
+í”„ë¡ íŠ¸(`frontend/.env`):
 
-### 2.2 `coss-frontend` Å¬¶óÀÌ¾ğÆ® »ı¼º (½Å±Ô)
+- `VITE_API_BASE_URL`
+- `VITE_KEYCLOAK_URL`
+- `VITE_KEYCLOAK_REALM`
+- `VITE_KEYCLOAK_CLIENT_ID`
+- `VITE_KEYCLOAK_REGISTER_URL`
 
-´ÙÀ½ °ªÀ¸·Î »ı¼ºÇÑ´Ù.
+ë³´ì•ˆ ê·œì¹™:
 
-- Client type: `OpenID Connect`
-- Client ID: `coss-frontend`
-- Client authentication: `Off` (public client)
-- Standard flow: `On` (Authorization Code)
-- Direct access grants: `Off` ±ÇÀå
-- PKCE: `S256` »ç¿ë
+- `NCP_ACCESS_KEY`, `NCP_SECRET_KEY`ëŠ” ë°±ì—”ë“œì—ì„œë§Œ ì‚¬ìš©
+- í”„ë¡ íŠ¸ ì½”ë“œ/ë¸Œë¼ìš°ì €ì— ì ˆëŒ€ ë…¸ì¶œí•˜ì§€ ì•ŠìŒ
+- Object Storage ë²„í‚·ì€ private ìœ ì§€
 
-### 2.3 Redirect / Logout / Web origins
+## 3. FFmpeg ì„¤ì¹˜
 
-`coss-frontend`ÀÇ URL °ü·Ã Ç×¸ñÀº È¯°æº¯¼ö ±âÁØÀ¸·Î °ü¸®ÇÑ´Ù.
+- Windows(choco): `choco install ffmpeg`
+- macOS(brew): `brew install ffmpeg`
+- Ubuntu: `sudo apt-get install ffmpeg`
 
-·ÎÄÃ ¿¹½Ã:
+ì„¤ì¹˜ í›„ `ffmpeg -version`ìœ¼ë¡œ í™•ì¸í•˜ê³ , í•„ìš” ì‹œ `FFMPEG_PATH`ì— ì ˆëŒ€ ê²½ë¡œë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 
-- Valid redirect URIs:
-  - `http://localhost:5173/*`
-- Valid post logout redirect URIs:
-  - `http://localhost:5173/*`
-- Web origins:
-  - `http://localhost:5173`
+## 4. ë¡œì»¬ ì‹¤í–‰
 
-¹èÆ÷ ¿¹½Ã:
-
-- Valid redirect URIs:
-  - `https://<FRONTEND_PUBLIC_URL>/*`
-- Valid post logout redirect URIs:
-  - `https://<FRONTEND_PUBLIC_URL>/*`
-- Web origins:
-  - `https://<FRONTEND_PUBLIC_URL>`
-
-ÁÖÀÇ: KeycloakÀÌ private subnet¿¡ ÀÖ¾îµµ ºê¶ó¿ìÀú¿¡¼­ Á¢±Ù °¡´ÉÇÑ **issuer public URL**·Î ¼³Á¤ÇØ¾ß ÇÑ´Ù.
-
-## 3. È¯°æº¯¼ö
-
-### 3.1 Frontend (`frontend/.env`)
-
-`frontend/.env.example` Âü°í:
-
-- `VITE_API_BASE_URL`: API base URL
-- `VITE_KEYCLOAK_URL`: Keycloak °ø°³ URL
-- `VITE_KEYCLOAK_REALM`: `coss`
-- `VITE_KEYCLOAK_CLIENT_ID`: `coss-frontend`
-- `VITE_KEYCLOAK_REGISTER_URL`: Keycloak registration endpoint
-
-### 3.2 API (`backend/api/.env`)
-
-`backend/api/.env.example` Âü°í:
-
-- `DB_USERNAME`, `DB_PASSWORD`
-- `ISSUER_URI` (¿¹: `http://localhost:8080/realms/coss`)
-- `CORS_ALLOWED_ORIGINS` (¿¹: `http://localhost:5173`)
-
-## 4. ·ÎÄÃ ½ÇÇà
-
-### 4.1 °³º° ½ÇÇà
-
-1. API DB(MySQL) ÁØºñ
-2. Keycloak ½ÇÇà + Realm/Client ¼³Á¤
-3. API ½ÇÇà
+1. Keycloak + MySQL ì‹¤í–‰ (compose ë˜ëŠ” ê°œë³„)
+2. API ì‹¤í–‰
 
 ```bash
 cd backend/api
 ./gradlew bootRun
 ```
 
-4. Frontend ½ÇÇà
+3. Frontend ì‹¤í–‰
 
 ```bash
 cd frontend
@@ -93,53 +72,33 @@ npm install
 npm run dev
 ```
 
-### 4.2 Docker Compose ½ÇÇà
+4. í†µí•© ì‹¤í–‰(ì„ íƒ)
 
 ```bash
 docker compose -f docker-compose.local.yml up --build
 ```
 
-Æ÷Æ®:
-- Frontend: `5173`
-- API: `8081`
-- Keycloak: `8080`
+## 5. ì¸ë„¤ì¼ ì²˜ë¦¬ íë¦„
 
-## 5. ºê¶ó¿ìÀú ½Ã¿¬ ½ºÅ©¸³Æ®
+1. `upload-complete` ìˆ˜ì‹ 
+2. Object Storage HEADë¡œ íŒŒì¼ ì¡´ì¬ í™•ì¸
+3. `lecture_videos` ì €ì¥(status=`UPLOADED`)
+4. ë¹„ë™ê¸° ì‘ì—…ì—ì„œ status=`PROCESSING`
+5. FFmpegë¡œ 2ì´ˆ í”„ë ˆì„ ìº¡ì²˜
+6. ì¸ë„¤ì¼ ì—…ë¡œë“œ í›„ `thumbnail_key` ì €ì¥
+7. status=`READY`
 
-### ½Ã³ª¸®¿À A: ÇĞ»ı(STUDENT)
+## 6. í…ŒìŠ¤íŠ¸
 
-1. `http://localhost:5173` Á¢¼Ó
-2. ·Î±×ÀÎ ¹öÆ° Å¬¸¯ (Keycloak ·Î±×ÀÎ)
-3. Student °èÁ¤ ·Î±×ÀÎ
-4. `StudentPage` ÀÌµ¿
-5. `°­ÀÇ ¸ñ·Ï »õ·Î°íÄ§` Å¬¸¯ -> `/api/student/courses` ¼º°ø È®ÀÎ
-6. `°ü¸®ÀÚ API 403 È®ÀÎ` Å¬¸¯ -> `/api/admin/courses` 403 È®ÀÎ
+ë°±ì—”ë“œ í…ŒìŠ¤íŠ¸ ì‹¤í–‰:
 
-### ½Ã³ª¸®¿À B: °ü¸®ÀÚ(ADMIN)
+```bash
+cd backend/api
+./gradlew test
+```
 
-1. ·Î±×¾Æ¿ô ÈÄ °ü¸®ÀÚ °èÁ¤À¸·Î ·Î±×ÀÎ
-2. `AdminPage` ÀÌµ¿
-3. °­ÀÇ »ı¼º Æû ÀÔ·Â ÈÄ `°­ÀÇ »ı¼º`
-4. »ı¼º ÀÀ´ä(JSON) È®ÀÎ
-5. `StudentPage`¿¡¼­ ¸ñ·Ï »õ·Î°íÄ§ ÈÄ ¹æ±İ »ı¼ºÇÑ °­ÀÇ È®ÀÎ
+í¬í•¨ í…ŒìŠ¤íŠ¸:
 
-## 6. ÇöÀç ±¸Çö ¹üÀ§
-
-- ÇÁ·ĞÆ® ÆäÀÌÁö 3°³:
-  - Home(·Î±×ÀÎ »óÅÂ + `/api/me`)
-  - StudentPage(°­ÀÇ ¸ñ·Ï)
-  - AdminPage(°­ÀÇ »ı¼º)
-- ·Î±×ÀÎ/·Î±×¾Æ¿ô/È¸¿ø°¡ÀÔ ¹öÆ°
-- Access Token ÀÚµ¿ Ã·ºÎ (`Authorization: Bearer ...`)
-- ÅäÅ« °»½Å(`updateToken(30)`) ÁÖ±â Ã³¸®
-
-## 7. Âü°í ÆÄÀÏ
-
-- `frontend/src/auth.js`
-- `frontend/src/api.js`
-- `frontend/src/pages/Home.jsx`
-- `frontend/src/pages/StudentPage.jsx`
-- `frontend/src/pages/AdminPage.jsx`
-- `backend/api/src/main/java/com/cloudsquare/coss/api/config/SecurityConfig.java`
-- `backend/api/src/main/resources/application.yaml`
-- `docker-compose.local.yml`
+- Presigned URL ìƒì„± í…ŒìŠ¤íŠ¸
+- ìˆ˜ê°• ì—¬ë¶€ ì ‘ê·¼ ì œì–´ í…ŒìŠ¤íŠ¸
+- ì¸ë„¤ì¼ ìƒíƒœ ì „ì´ í…ŒìŠ¤íŠ¸
