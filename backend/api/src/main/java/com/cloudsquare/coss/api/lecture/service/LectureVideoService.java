@@ -94,7 +94,9 @@ public class LectureVideoService {
 
         LectureVideo video = lectureVideoRepository
                 .findTopByLecture_IdAndStatusOrderByUpdatedAtDesc(lectureId, LectureVideoStatus.READY)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ready video not found"));
+                .orElseGet(() -> lectureVideoRepository
+                        .findTopByLecture_IdOrderByCreatedAtDesc(lectureId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "video not found")));
 
         String playbackUrl = buildPlaybackUrl(video.getVideoKey());
         return new PlaybackResponse(playbackUrl, storageProperties.getPresignedGetExpiresSeconds());
