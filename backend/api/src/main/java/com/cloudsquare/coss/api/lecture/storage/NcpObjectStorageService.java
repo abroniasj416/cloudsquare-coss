@@ -37,9 +37,11 @@ public class NcpObjectStorageService implements ObjectStorageService {
 
     @Override
     public String generatePresignedPutUrl(String objectKey, Duration expires) {
+        String normalizedObjectKey = normalizeObjectKey(objectKey);
+
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(properties.getBucket())
-                .key(objectKey)
+                .key(normalizedObjectKey)
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
@@ -53,9 +55,11 @@ public class NcpObjectStorageService implements ObjectStorageService {
 
     @Override
     public String generatePresignedGetUrl(String objectKey, Duration expires) {
+        String normalizedObjectKey = normalizeObjectKey(objectKey);
+
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(properties.getBucket())
-                .key(objectKey)
+                .key(normalizedObjectKey)
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
@@ -69,10 +73,12 @@ public class NcpObjectStorageService implements ObjectStorageService {
 
     @Override
     public boolean objectExists(String objectKey) {
+        String normalizedObjectKey = normalizeObjectKey(objectKey);
+
         try {
             s3Client.headObject(HeadObjectRequest.builder()
                     .bucket(properties.getBucket())
-                    .key(objectKey)
+                    .key(normalizedObjectKey)
                     .build());
             return true;
         } catch (S3Exception e) {
@@ -85,22 +91,57 @@ public class NcpObjectStorageService implements ObjectStorageService {
 
     @Override
     public void downloadToFile(String objectKey, Path targetFile) {
+        String normalizedObjectKey = normalizeObjectKey(objectKey);
+
         s3Client.getObject(
                 GetObjectRequest.builder()
                         .bucket(properties.getBucket())
-                        .key(objectKey)
+                        .key(normalizedObjectKey)
                         .build(),
                 ResponseTransformer.toFile(targetFile));
     }
 
     @Override
     public void uploadFile(String objectKey, Path sourceFile, String contentType) {
+        String normalizedObjectKey = normalizeObjectKey(objectKey);
+
         s3Client.putObject(
                 PutObjectRequest.builder()
                         .bucket(properties.getBucket())
-                        .key(objectKey)
+                        .key(normalizedObjectKey)
                         .contentType(contentType)
                         .build(),
                 RequestBody.fromFile(sourceFile));
+    }
+
+    private String normalizeObjectKey(String objectKey) {
+        String key = stripSlashes(objectKey);
+        if (key.isBlank()) {
+            throw new IllegalArgumentException("objectKey must not be blank");
+        }
+
+        String prefix = stripSlashes(properties.getVideoPrefix());
+        if (prefix.isBlank()) {
+            return key;
+        }
+        if (key.startsWith(prefix + "/")) {
+            return key;
+        }
+        return prefix + "/" + key;
+    }
+
+    private String stripSlashes(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        String stripped = value.trim();
+        while (stripped.startsWith("/")) {
+            stripped = stripped.substring(1);
+        }
+        while (stripped.endsWith("/")) {
+            stripped = stripped.substring(0, stripped.length() - 1);
+        }
+        return stripped;
     }
 }

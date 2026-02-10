@@ -13,6 +13,16 @@ spring:
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:https://hwangsoojin.cloud}
+  storage:
+    access-key: ${NCP_ACCESS_KEY:${NCP_S3_ACCESS_KEY:}}
+    secret-key: ${NCP_SECRET_KEY:${NCP_S3_SECRET_KEY:}}
+    endpoint: ${NCP_S3_ENDPOINT:${NCP_ENDPOINT:}}
+    bucket: ${NCP_OBJECT_STORAGE_BUCKET:${NCP_BUCKET:}}
+    video-prefix: ${NCP_VIDEO_PREFIX:${NCP_S3_VIDEO_PREFIX:}}
+    cdn-base-url: ${CDN_BASE_URL:${NCP_CDN_BASE_URL:}}
+    presigned-put-expires-seconds: ${PRESIGNED_PUT_EXPIRES_SECONDS:300}
+    presigned-get-expires-seconds: ${PRESIGNED_GET_EXPIRES_SECONDS:120}
+    region: ${NCP_REGION:${NCP_S3_REGION:}}
 
 server:
   port: 8081

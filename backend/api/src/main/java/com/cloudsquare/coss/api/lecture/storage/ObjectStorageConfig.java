@@ -1,6 +1,8 @@
 package com.cloudsquare.coss.api.lecture.storage;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,10 +19,10 @@ public class ObjectStorageConfig {
 
     @Bean
     S3Client s3Client(ObjectStorageProperties properties) {
-        validateRequiredStorageConfig(properties);
+        URI endpoint = validateAndGetEndpoint(properties);
 
         return S3Client.builder()
-                .endpointOverride(URI.create(properties.getEndpoint()))
+                .endpointOverride(endpoint)
                 .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
                 .region(Region.of(properties.getRegion()))
                 .credentialsProvider(StaticCredentialsProvider.create(
@@ -30,26 +32,36 @@ public class ObjectStorageConfig {
 
     @Bean
     S3Presigner s3Presigner(ObjectStorageProperties properties) {
-        validateRequiredStorageConfig(properties);
+        URI endpoint = validateAndGetEndpoint(properties);
 
         return S3Presigner.builder()
-                .endpointOverride(URI.create(properties.getEndpoint()))
+                .endpointOverride(endpoint)
+                .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
                 .region(Region.of(properties.getRegion()))
                 .credentialsProvider(StaticCredentialsProvider.create(
                         AwsBasicCredentials.create(properties.getAccessKey(), properties.getSecretKey())))
                 .build();
     }
 
-    private void validateRequiredStorageConfig(ObjectStorageProperties properties) {
-        requireConfigured(properties.getEndpoint(), "NCP_S3_ENDPOINT");
-        requireConfigured(properties.getBucket(), "NCP_OBJECT_STORAGE_BUCKET");
-        requireConfigured(properties.getAccessKey(), "NCP_ACCESS_KEY");
-        requireConfigured(properties.getSecretKey(), "NCP_SECRET_KEY");
+    private URI validateAndGetEndpoint(ObjectStorageProperties properties) {
+        List<String> missing = new ArrayList<>();
+
+        requireConfigured(properties.getEndpoint(), "NCP_S3_ENDPOINT (or NCP_ENDPOINT)", missing);
+        requireConfigured(properties.getBucket(), "NCP_OBJECT_STORAGE_BUCKET (or NCP_BUCKET)", missing);
+        requireConfigured(properties.getRegion(), "NCP_REGION (or NCP_S3_REGION)", missing);
+        requireConfigured(properties.getAccessKey(), "NCP_ACCESS_KEY (or NCP_S3_ACCESS_KEY)", missing);
+        requireConfigured(properties.getSecretKey(), "NCP_SECRET_KEY (or NCP_S3_SECRET_KEY)", missing);
+
+        if (!missing.isEmpty()) {
+            throw new IllegalStateException("Missing required Object Storage environment variables: " + String.join(", ", missing));
+        }
+
+        return URI.create(properties.getEndpoint().trim());
     }
 
-    private void requireConfigured(String value, String envName) {
+    private void requireConfigured(String value, String envName, List<String> missing) {
         if (value == null || value.isBlank() || value.contains("${")) {
-            throw new IllegalStateException(envName + " is required. Set it in environment or backend/api/.env");
+            missing.add(envName);
         }
     }
 }
