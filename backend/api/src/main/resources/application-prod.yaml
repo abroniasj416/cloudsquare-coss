@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://db-3pnn70.vpc-cdb.ntruss.com:3306/coss_api?serverTimezone=Asia/Seoul&characterEncoding=utf8&useUnicode=true}
+    username: ${DB_USERNAME:cloudsquare}
+    password: ${DB_PASSWORD:cloudsquare443@}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${ISSUER_URI:https://auth.hwangsoojin.cloud/realms/coss}
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://hwangsoojin.cloud}
+
+server:
+  port: 8081
+  forward-headers-strategy: framework

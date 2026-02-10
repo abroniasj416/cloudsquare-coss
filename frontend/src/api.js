@@ -1,6 +1,16 @@
 import { ensureFreshToken } from "./auth";
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const configuredBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").trim();
+
+function normalizeBaseUrl(baseUrl) {
+  if (!baseUrl || baseUrl === "/") {
+    return "";
+  }
+
+  return baseUrl.replace(/\/+$/, "");
+}
+
+const apiBaseUrl = normalizeBaseUrl(configuredBaseUrl);
 
 async function request(path, options = {}) {
   const token = await ensureFreshToken();

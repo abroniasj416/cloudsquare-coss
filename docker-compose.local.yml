@@ -47,9 +47,11 @@ services:
       dockerfile: Dockerfile
     container_name: coss-api
     environment:
+      SPRING_PROFILES_ACTIVE: local
+      DB_URL: jdbc:mysql://api-db:3306/coss_api?serverTimezone=Asia/Seoul&characterEncoding=utf8&useUnicode=true
       DB_USERNAME: root
       DB_PASSWORD: rootpw
-      ISSUER_URI: http://localhost:8080/realms/coss
+      ISSUER_URI: http://keycloak:8080/realms/coss
       CORS_ALLOWED_ORIGINS: http://localhost:5173
       NCP_ACCESS_KEY: ${NCP_ACCESS_KEY:-dummy-access-key}
       NCP_SECRET_KEY: ${NCP_SECRET_KEY:-dummy-secret-key}
@@ -67,16 +69,18 @@ services:
       - "8081:8081"
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: node:20-alpine
     container_name: coss-frontend
+    working_dir: /app
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0 --port 5173"
     environment:
       VITE_API_BASE_URL: http://localhost:8081
       VITE_KEYCLOAK_URL: http://localhost:8080
       VITE_KEYCLOAK_REALM: coss
       VITE_KEYCLOAK_CLIENT_ID: coss-frontend
       VITE_KEYCLOAK_REGISTER_URL: http://localhost:8080/realms/coss/protocol/openid-connect/registrations?client_id=coss-frontend&response_type=code&scope=openid&redirect_uri=http://localhost:5173
+    volumes:
+      - ./frontend:/app
     depends_on:
       - api
     ports:
