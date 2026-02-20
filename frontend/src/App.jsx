@@ -8,6 +8,7 @@ import AdminPage from "./pages/AdminPage";
 import LectureListPage from "./pages/LectureListPage";
 import LectureDetailPage from "./pages/LectureDetailPage";
 import VideoPlayerPage from "./pages/VideoPlayerPage";
+import MyCertificatesPage from "./pages/MyCertificatesPage";
 import AlertBox from "./components/ui/AlertBox";
 
 export default function App() {
@@ -78,6 +79,7 @@ export default function App() {
           <Route path="lectures" element={<LectureListPage auth={auth} />} />
           <Route path="lectures/:lectureId" element={<LectureDetailPage auth={auth} />} />
           <Route path="lectures/:lectureId/watch" element={<VideoPlayerPage auth={auth} />} />
+          <Route path="certificates/me" element={<MyCertificatesPage auth={auth} />} />
           <Route path="admin" element={<AdminPage auth={auth} />} />
         </Route>
       </Routes>

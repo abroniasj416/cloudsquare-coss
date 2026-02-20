@@ -485,6 +485,25 @@ input:focus {
   color: #64748b;
 }
 
+.simple-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.simple-table th,
+.simple-table td {
+  border-bottom: 1px solid #dbe5f1;
+  padding: 10px 8px;
+  text-align: left;
+}
+
+.simple-table th {
+  color: #334155;
+  font-weight: 700;
+  background: #f8fafc;
+}
+
 @media (max-width: 1080px) {
   .header-inner {
     grid-template-columns: 1fr;

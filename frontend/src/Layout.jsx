@@ -32,6 +32,7 @@ export default function Layout({ auth, refreshAuth }) {
           <nav className="main-nav">
             <NavLink to="/">Home</NavLink>
             <NavLink to="/lectures">Lectures</NavLink>
+            <NavLink to="/certificates/me">Certificates</NavLink>
             <NavLink to="/admin">Admin</NavLink>
           </nav>
 

@@ -102,3 +102,27 @@ cd backend/api
 - Presigned URL ÏÉùÏÑ± ÌÖåÏä§Ìä∏
 - ÏàòÍ∞ï Ïó¨Î∂Ä Ï†ëÍ∑º Ï†úÏñ¥ ÌÖåÏä§Ìä∏
 - Ïç∏ÎÑ§Ïùº ÏÉÅÌÉú Ï†ÑÏù¥ ÌÖåÏä§Ìä∏
+## 7. Completion Certificate µ•∏
+
+### Serial Number ±‘ƒ¢
+- «¸Ωƒ: "lectureId-studentId"
+- ∞¢ ID¥¬ 4¿⁄∏Æ 0-padding
+- øπΩ√: `lectureId=1`, `studentId=2` -> "0001-0002"
+
+### API
+- `POST /api/lectures/{lectureId}/complete`
+  - «ˆ¿Á ∑Œ±◊¿Œ ªÁøÎ¿⁄ ±‚¡ÿ ºˆ∞≠ øœ∑· √≥∏Æ + ºˆ∑·¡ı πﬂ±ﬁ
+  - ¿ÃπÃ πﬂ±ﬁµ» ∞ÊøÏ ±‚¡∏ ºˆ∑·¡ı π›»Ø
+- `GET /api/certificates/me`
+  - «ˆ¿Á ∑Œ±◊¿Œ ªÁøÎ¿⁄ ºˆ∑·¡ı ∏Ò∑œ ¡∂»∏
+- `GET /api/certificates?userId={id}`
+  - External ø¨µøøÎ µ•∏ API
+  - øÓøµ »Ø∞Êø°º≠¥¬ ≥ª∫Œ∏¡/πÊ»≠∫Æ/ACG ¡¶«— ¿¸¡¶
+- `GET /api/certificates/lectures/{lectureId}/me`
+  - ∆Ø¡§ ∞≠¿«¿« ≥ª ºˆ∑·¡ı ¡∂»∏
+
+### Demo Ω√≥™∏Æø¿
+1. «–ª˝ ∞Ë¡§¿∏∑Œ ∑Œ±◊¿Œ
+2. `Lectures` -> ∞≠¿« ªÛºº -> `Complete Lecture` ≈¨∏Ø
+3. πﬂ±ﬁµ» `serialNumber` »Æ¿Œ
+4. ªÛ¥‹ `Certificates` ∏ﬁ¥∫ø°º≠ ≥ª ºˆ∑·¡ı ∏Ò∑œ »Æ¿Œ

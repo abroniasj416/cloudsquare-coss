@@ -54,6 +54,18 @@ export function enrollLecture(lectureId) {
   return request(`/api/lectures/${lectureId}/enroll`, { method: "POST" });
 }
 
+export function completeLecture(lectureId) {
+  return request(`/api/lectures/${lectureId}/complete`, { method: "POST" });
+}
+
+export function getMyCertificates() {
+  return request("/api/certificates/me");
+}
+
+export function getCertificatesByUserId(userId) {
+  return request(`/api/certificates?userId=${encodeURIComponent(userId)}`);
+}
+
 export function getPlayback(lectureId) {
   return request(`/api/lectures/${lectureId}/playback`);
 }
