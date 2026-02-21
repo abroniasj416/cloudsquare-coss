@@ -12,21 +12,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cloudsquare.coss.api.lecture.dto.CompletionCertificateResponse;
 import com.cloudsquare.coss.api.lecture.service.CompletionCertificateService;
-import com.cloudsquare.coss.api.lecture.service.ExternalCertificateService;
 
 @RestController
 @RequestMapping("/api/certificates")
 public class CertificateController {
 
     private final CompletionCertificateService completionCertificateService;
-    private final ExternalCertificateService externalCertificateService;
 
     public CertificateController(
-            CompletionCertificateService completionCertificateService,
-            ExternalCertificateService externalCertificateService
+            CompletionCertificateService completionCertificateService
     ) {
         this.completionCertificateService = completionCertificateService;
-        this.externalCertificateService = externalCertificateService;
     }
 
     @GetMapping("/me")
@@ -36,7 +32,7 @@ public class CertificateController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8")
     public List<CompletionCertificateResponse> getCertificatesForExternal() {
-        return externalCertificateService.getSampleCertificates();
+        return completionCertificateService.getCertificatesForExternal();
     }
 
     @GetMapping(params = "userId")

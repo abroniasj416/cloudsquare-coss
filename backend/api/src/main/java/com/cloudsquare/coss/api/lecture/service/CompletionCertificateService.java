@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -47,6 +48,13 @@ public class CompletionCertificateService {
     @Transactional(readOnly = true)
     public List<CompletionCertificateResponse> getCertificatesByUserId(Long userId) {
         return completionCertificateRepository.findByUserIdOrderByIssuedAtDesc(userId).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CompletionCertificateResponse> getCertificatesForExternal() {
+        return completionCertificateRepository.findAll(Sort.by(Sort.Direction.DESC, "issuedAt")).stream()
                 .map(this::toResponse)
                 .toList();
     }
