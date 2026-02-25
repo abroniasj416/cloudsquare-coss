@@ -2,6 +2,11 @@ server {
   listen 80;
   server_name _;
 
+  # Redirect original HTTP requests to HTTPS when behind LB/proxy.
+  if ($http_x_forwarded_proto = "http") {
+    return 308 https://$host$request_uri;
+  }
+
   root /usr/share/nginx/html;
   index index.html;
 
