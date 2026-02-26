@@ -43,6 +43,8 @@ app:
 
 server:
   port: 8081
+  error:
+    include-path: never
 
 logging:
   level:
