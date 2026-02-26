@@ -38,16 +38,20 @@ public class SecurityConfig {
 
     private static final String ROLE_PREFIX = "ROLE_";
     private final List<String> allowedOrigins;
+    private final boolean corsEnabled;
 
-    public SecurityConfig(@Value("${app.cors.allowed-origins}") List<String> allowedOrigins) {
+    public SecurityConfig(
+            @Value("${app.cors.allowed-origins}") List<String> allowedOrigins,
+            @Value("${app.cors.enabled:true}") boolean corsEnabled
+    ) {
         this.allowedOrigins = allowedOrigins;
+        this.corsEnabled = corsEnabled;
     }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health").permitAll()
@@ -58,6 +62,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+
+        if (corsEnabled) {
+            http.cors(Customizer.withDefaults());
+        }
 
         return http.build();
     }
