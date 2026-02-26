@@ -8,7 +8,9 @@ server {
     return 200 "ok";
   }
 
-  return 444;
+  location / {
+    return 444;
+  }
 }
 
 server {
